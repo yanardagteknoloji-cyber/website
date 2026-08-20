@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yanardağ</title>
+    <title>Yanardağ Bağlantıları</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            /* Ekran yüksekliğini sabitleyen ayarlar kaldırıldı, kaydırma açıldı */
             background-color: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
+            overflow-x: hidden; /* Sadece yatay kaydırmayı engelle */
             font-family: Arial, sans-serif;
         }
         canvas {
             display: block;
+            margin: 0 auto;
             background-color: #000000;
-            touch-action: none;
+            /* touch-action: none; kaldırıldı ki mobilde ekran kaydırılabilsin */
         }
     </style>
 </head>
@@ -33,6 +31,8 @@
         const ctx = canvas.getContext('2d');
 
         let hitboxes = [];
+        let dpr = window.devicePixelRatio || 1;
+        let logicalHeight = window.innerHeight; 
 
         const menuData = [
             { 
@@ -59,7 +59,7 @@
         const bayrakExtensions = ['bayrak.png', 'bayrak.PNG', 'bayrak.jpg', 'bayrak.jpeg', 'Bayrak1.png'];
         let bayrakIndex = 0;
 
-        img1.onload = () => { img1Loaded = true; };
+        img1.onload = () => { img1Loaded = true; resizeCanvas(); };
         img1.onerror = () => {
             bayrakIndex++;
             loadBayrak();
@@ -74,7 +74,7 @@
         const avatarExtensions = ['avatar.jpeg', 'avatar.jpg', 'avatar.png', 'avatar.JPEG', 'avatar.JPG', 'avatar.PNG'];
         let avatarIndex = 0;
 
-        img2.onload = () => { img2Loaded = true; };
+        img2.onload = () => { img2Loaded = true; resizeCanvas(); };
         img2.onerror = () => {
             avatarIndex++;
             loadAvatar();
@@ -95,44 +95,89 @@
 
         function initParticles() {
             particles.length = 0;
+            const width = window.innerWidth;
             for (let i = 0; i < particleCount; i++) {
-                const randomColor = fireColors[Math.floor(Math.random() * fireColors.length)];
                 particles.push({
-                    x: Math.random() * window.innerWidth,
-                    y: Math.random() * window.innerHeight,
+                    x: Math.random() * width,
+                    y: Math.random() * logicalHeight,
                     radius: Math.random() * 3 + 1,
                     speedX: (Math.random() - 0.5) * 0.8,
                     speedY: Math.random() * -1.5 - 0.5,
                     opacity: Math.random() * 0.8 + 0.2,
-                    color: randomColor
+                    color: fireColors[Math.floor(Math.random() * fireColors.length)]
                 });
             }
         }
 
+        function calculateContentHeight() {
+            const width = window.innerWidth;
+            let currentY = window.innerHeight > 800 ? 30 : 15;
+
+            if (img1Loaded) {
+                const maxWidth1 = Math.min(320, width * 0.7);
+                const maxHeight1 = window.innerHeight * 0.25; 
+                const scale1 = Math.min(maxWidth1 / img1.width, maxHeight1 / img1.height);
+                currentY += (img1.height * scale1) + 15;
+            }
+
+            if (img2Loaded) {
+                const maxWidth2 = Math.min(170, width * 0.4);
+                const maxHeight2 = window.innerHeight * 0.20; 
+                const scale2 = Math.min(maxWidth2 / img2.width, maxHeight2 / img2.height);
+                currentY += (img2.height * scale2) + 25;
+            }
+
+            if (!img1Loaded && !img2Loaded) {
+                currentY += 150;
+            }
+
+            currentY += 50; // Başlık
+            currentY += 65; // Hoş geldiniz
+
+            const btnHeight = width < 500 ? 55 : 70;
+            currentY += menuData.length * (btnHeight + 25);
+            
+            currentY += 50; // Alt boşluk
+
+            // Ekran yüksekliğinden küçükse ekranı kapla, büyükse içeriğe göre uza
+            return Math.max(window.innerHeight, currentY);
+        }
+
         function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            dpr = window.devicePixelRatio || 1;
+            const width = window.innerWidth;
+            
+            // İçerik uzunluğunu hesapla ve Canvas yüksekliğini ona göre ayarla
+            logicalHeight = calculateContentHeight();
+
+            canvas.width = width * dpr;
+            canvas.height = logicalHeight * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = logicalHeight + 'px';
+
+            ctx.resetTransform();
+            ctx.scale(dpr, dpr);
+
             initParticles();
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         function draw() {
-            if (img1.complete && img1.naturalWidth !== 0) img1Loaded = true;
-            if (img2.complete && img2.naturalWidth !== 0) img2Loaded = true;
+            const width = window.innerWidth;
 
             ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, width, logicalHeight);
 
             particles.forEach(p => {
                 p.x += p.speedX;
                 p.y += p.speedY;
 
-                if (p.x < 0) p.x = canvas.width;
-                if (p.x > canvas.width) p.x = 0;
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
                 if (p.y < 0) {
-                    p.y = canvas.height;
-                    p.x = Math.random() * canvas.width;
+                    p.y = logicalHeight;
+                    p.x = Math.random() * width;
                 }
 
                 ctx.beginPath();
@@ -141,12 +186,12 @@
                 ctx.fill();
             });
 
-            const centerX = canvas.width / 2;
-            let currentY = canvas.height > 800 ? 30 : 15;
+            const centerX = width / 2;
+            let currentY = window.innerHeight > 800 ? 30 : 15;
 
             if (img1Loaded) {
-                const maxWidth1 = Math.min(320, canvas.width * 0.7);
-                const maxHeight1 = canvas.height * 0.25; 
+                const maxWidth1 = Math.min(320, width * 0.7);
+                const maxHeight1 = window.innerHeight * 0.25; 
                 const scale1 = Math.min(maxWidth1 / img1.width, maxHeight1 / img1.height);
                 const w1 = img1.width * scale1;
                 const h1 = img1.height * scale1;
@@ -155,8 +200,8 @@
             }
 
             if (img2Loaded) {
-                const maxWidth2 = Math.min(170, canvas.width * 0.4);
-                const maxHeight2 = canvas.height * 0.20; 
+                const maxWidth2 = Math.min(170, width * 0.4);
+                const maxHeight2 = window.innerHeight * 0.20; 
                 const scale2 = Math.min(maxWidth2 / img2.width, maxHeight2 / img2.height);
                 const w2 = img2.width * scale2;
                 const h2 = img2.height * scale2;
@@ -173,15 +218,13 @@
 
             ctx.fillStyle = '#FFFFFF';
             if ('letterSpacing' in ctx) ctx.letterSpacing = "4px";
-            ctx.font = 'bold 44px Arial, sans-serif';
-            if(canvas.width < 500) ctx.font = 'bold 28px Arial, sans-serif';
-            ctx.fillText('YANARDAĞ', centerX, currentY);
+            ctx.font = width < 500 ? 'bold 28px Arial, sans-serif' : 'bold 44px Arial, sans-serif';
+            ctx.fillText('YANARDAĞ BAĞLANTILARI', centerX, currentY);
             if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
             
             currentY += 50;
 
-            ctx.font = '34px Arial, sans-serif';
-            if(canvas.width < 500) ctx.font = '24px Arial, sans-serif';
+            ctx.font = width < 500 ? '24px Arial, sans-serif' : '34px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
             currentY += 65;
@@ -195,12 +238,11 @@
                     item.animProgress = Math.max(item.animProgress - 0.1, 0);
                 }
 
-                ctx.font = 'bold 26px Arial, sans-serif';
-                if(canvas.width < 500) ctx.font = 'bold 20px Arial, sans-serif';
+                ctx.font = width < 500 ? 'bold 20px Arial, sans-serif' : 'bold 26px Arial, sans-serif';
                 
                 const textWidth = ctx.measureText(item.title).width;
                 const btnWidth = textWidth + 100;
-                const btnHeight = canvas.width < 500 ? 55 : 70;
+                const btnHeight = width < 500 ? 55 : 70;
 
                 ctx.save();
                 ctx.translate(centerX, currentY);
@@ -243,8 +285,10 @@
 
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
-            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
-            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            // Kaydırma miktarını (scroll) otomatik hesaplamak için clientY - rect.top kullanılır
+            const touch = evt.touches && evt.touches[0] ? evt.touches[0] : (evt.changedTouches ? evt.changedTouches[0] : null);
+            const clientX = touch ? touch.clientX : evt.clientX;
+            const clientY = touch ? touch.clientY : evt.clientY;
             return {
                 x: clientX - rect.left,
                 y: clientY - rect.top
@@ -283,14 +327,6 @@
 
         canvas.addEventListener('click', handleClick);
         canvas.addEventListener('mousemove', handleMouseMove);
-        
-        canvas.addEventListener('touchstart', (e) => {
-            handleMouseMove(e);
-        }, {passive: true});
-        
-        canvas.addEventListener('touchend', (e) => {
-            handleClick(e.changedTouches ? e.changedTouches[0] : e);
-        });
 
         draw();
     </script>
