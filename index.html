@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yanardağ</title>
+    <title>Yanard n   ağ</title>
     <style>
         body, html {
             margin: 0;
@@ -100,7 +100,7 @@
                 particles.push({
                     x: Math.random() * window.innerWidth,
                     y: Math.random() * window.innerHeight,
-                    radius: Math.random() * 2 + 0.5,
+                    radius: Math.random() * 3 + 1,
                     speedX: (Math.random() - 0.5) * 0.8,
                     speedY: Math.random() * -1.5 - 0.5,
                     opacity: Math.random() * 0.8 + 0.2,
@@ -142,10 +142,10 @@
             });
 
             const centerX = canvas.width / 2;
-            let currentY = canvas.height > 800 ? 50 : 25;
+            let currentY = canvas.height > 800 ? 30 : 15;
 
             if (img1Loaded) {
-                const maxWidth1 = Math.min(240, canvas.width * 0.55);
+                const maxWidth1 = Math.min(320, canvas.width * 0.7);
                 const scale1 = maxWidth1 / img1.width;
                 const w1 = maxWidth1;
                 const h1 = img1.height * scale1;
@@ -154,7 +154,7 @@
             }
 
             if (img2Loaded) {
-                const maxWidth2 = Math.min(120, canvas.width * 0.3);
+                const maxWidth2 = Math.min(170, canvas.width * 0.4);
                 const scale2 = maxWidth2 / img2.width;
                 const w2 = maxWidth2;
                 const h2 = img2.height * scale2;
@@ -163,26 +163,26 @@
             }
 
             if (!img1Loaded && !img2Loaded) {
-                currentY += 150;
+                currentY += 200;
             }
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
             ctx.fillStyle = '#FFFFFF';
-            if ('letterSpacing' in ctx) ctx.letterSpacing = "3px";
-            ctx.font = 'bold 32px Arial, sans-serif';
-            if(canvas.width < 500) ctx.font = 'bold 24px Arial, sans-serif';
-            ctx.fillText('YANARDAĞ', centerX, currentY);
+            if ('letterSpacing' in ctx) ctx.letterSpacing = "4px";
+            ctx.font = 'bold 44px Arial, sans-serif';
+            if(canvas.width < 500) ctx.font = 'bold 28px Arial, sans-serif';
+            ctx.fillText('YANARDAĞ BAĞLANTILARI', centerX, currentY);
             if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
             
-            currentY += 40;
+            currentY += 50;
 
-            ctx.font = '28px Arial, sans-serif';
-            if(canvas.width < 500) ctx.font = '20px Arial, sans-serif';
+            ctx.font = '34px Arial, sans-serif';
+            if(canvas.width < 500) ctx.font = '24px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
-            currentY += 55;
+            currentY += 65;
 
             menuData.forEach((item, index) => {
                 if (item.isHovered) {
@@ -193,12 +193,12 @@
                     item.animProgress = Math.max(item.animProgress - 0.1, 0);
                 }
 
-                ctx.font = 'bold 20px Arial, sans-serif';
-                if(canvas.width < 500) ctx.font = 'bold 16px Arial, sans-serif';
+                ctx.font = 'bold 26px Arial, sans-serif';
+                if(canvas.width < 500) ctx.font = 'bold 20px Arial, sans-serif';
                 
                 const textWidth = ctx.measureText(item.title).width;
-                const btnWidth = textWidth + 80;
-                const btnHeight = canvas.width < 500 ? 45 : 55;
+                const btnWidth = textWidth + 100;
+                const btnHeight = canvas.width < 500 ? 55 : 70;
 
                 ctx.save();
                 ctx.translate(centerX, currentY);
@@ -206,7 +206,7 @@
 
                 ctx.beginPath();
                 if (ctx.roundRect) {
-                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 15);
+                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 18);
                 } else {
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
@@ -214,12 +214,12 @@
                 ctx.fillStyle = `rgba(255, 69, 0, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.strokeStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 ctx.stroke();
 
                 ctx.fillStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
-                if ('letterSpacing' in ctx) ctx.letterSpacing = "2px";
+                if ('letterSpacing' in ctx) ctx.letterSpacing = "3px";
                 ctx.fillText(item.title, 0, 0);
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
                 
@@ -233,7 +233,7 @@
                     url: item.url
                 };
 
-                currentY += btnHeight + 20;
+                currentY += btnHeight + 25;
             });
 
             requestAnimationFrame(draw);
