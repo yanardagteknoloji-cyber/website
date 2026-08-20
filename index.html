@@ -34,7 +34,7 @@
 
         let hitboxes = [];
 
-        // Menü verilerine animasyon değişkenlerini ekledik
+        // Menü Verileri
         const menuData = [
             { 
                 title: "WEB SİTESİ", 
@@ -64,23 +64,62 @@
         img1.onload = () => { img1Loaded = true; };
         img2.onload = () => { img2Loaded = true; };
 
+        // Arka Plan Parçacıkları (Animasyon için)
+        const particles = [];
+        const particleCount = 75; // Ekrandaki kıvılcım sayısı
+
+        function initParticles() {
+            particles.length = 0;
+            for (let i = 0; i < particleCount; i++) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: Math.random() * window.innerHeight,
+                    radius: Math.random() * 1.5 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.5,
+                    speedY: Math.random() * -1 - 0.2, // Yukarı doğru süzülme hızı
+                    opacity: Math.random() * 0.6 + 0.1
+                });
+            }
+        }
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            initParticles(); // Ekran boyutu değişince parçacıkları yeniden dağıt
         }
         window.addEventListener('resize', resizeCanvas);
-        resizeCanvas(); // İlk boyutlandırma
+        resizeCanvas();
 
-        // Animasyon Döngüsü (Her saniye 60 kere çalışır)
+        // Ana Çizim Döngüsü
         function draw() {
-            // Ekranı temizle
+            // 1. Ekranı temizle (Siyah Arka Plan)
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Arka Plan Parçacık Animasyonunu Çiz
+            particles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+
+                // Parçacık ekrandan çıkarsa aşağıdan farklı bir noktadan tekrar başlat
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) {
+                    p.y = canvas.height;
+                    p.x = Math.random() * canvas.width;
+                }
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                // Parçacıkların rengi: Temaya uygun hafif transparan mavi
+                ctx.fillStyle = `rgba(0, 115, 255, ${p.opacity})`; 
+                ctx.fill();
+            });
 
             const centerX = canvas.width / 2;
             let currentY = canvas.height > 800 ? 80 : 40;
 
-            // Fotoğrafları Çizdirme (Eski mantıkla aynı)
+            // 3. Fotoğrafları Çiz
             if (img1Loaded || img2Loaded) {
                 const gap = 20;
                 const maxWidth = Math.min(140, canvas.width * 0.35);
@@ -121,7 +160,7 @@
                 currentY += 180;
             }
 
-            // Başlık Çizimleri
+            // 4. Başlıkları Çiz
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -138,13 +177,12 @@
             if(canvas.width < 500) ctx.font = '20px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
-            currentY += 70; // Butonlara yaklaşmadan önce boşluk
+            currentY += 70;
 
-            // Animasyonlu Butonları Çizdirme
+            // 5. Animasyonlu Butonları Çiz
             menuData.forEach((item, index) => {
-                // Animasyon hesaplamaları (Yumuşak geçiş)
                 if (item.isHovered) {
-                    item.scale = Math.min(item.scale + 0.02, 1.08); // %8 büyür
+                    item.scale = Math.min(item.scale + 0.02, 1.08); 
                     item.animProgress = Math.min(item.animProgress + 0.1, 1);
                 } else {
                     item.scale = Math.max(item.scale - 0.02, 1.0);
@@ -155,31 +193,27 @@
                 if(canvas.width < 500) ctx.font = 'bold 16px Arial, sans-serif';
                 
                 const textWidth = ctx.measureText(item.title).width;
-                const btnWidth = textWidth + 80; // Kenarlardan boşluk (padding)
+                const btnWidth = textWidth + 80;
                 const btnHeight = canvas.width < 500 ? 45 : 55;
 
                 ctx.save();
                 ctx.translate(centerX, currentY);
-                ctx.scale(item.scale, item.scale); // Butonu merkezden büyüt
+                ctx.scale(item.scale, item.scale);
 
-                // Buton Arka Planı ve Çerçevesi
                 ctx.beginPath();
-                if (ctx.roundRect) { // Köşeleri ovalleştir
+                if (ctx.roundRect) {
                     ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 15);
                 } else {
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
 
-                // Hover olunca hafif mavi dolgu
                 ctx.fillStyle = `rgba(0, 115, 255, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
-                // Hover olunca beyazdan maviye dönen çerçeve
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
                 ctx.stroke();
 
-                // Buton İçi Metin
                 ctx.fillStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "2px";
                 ctx.fillText(item.title, 0, 0);
@@ -187,7 +221,6 @@
                 
                 ctx.restore();
 
-                // Hitbox'ı butonun boyutlarına göre kaydet
                 hitboxes[index] = {
                     x: centerX - btnWidth / 2,
                     y: currentY - btnHeight / 2,
@@ -196,14 +229,13 @@
                     url: item.url
                 };
 
-                currentY += btnHeight + 25; // Diğer butona olan mesafe
+                currentY += btnHeight + 25;
             });
 
-            // Döngüyü sürekli tekrarla
             requestAnimationFrame(draw);
         }
 
-        // Fare Koordinatlarını Alma
+        // Fare/Dokunmatik Etkileşimleri
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
             const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
@@ -214,7 +246,6 @@
             };
         }
 
-        // Tıklama Olayı
         function handleClick(evt) {
             const pos = getMousePos(evt);
             for (let i = 0; i < hitboxes.length; i++) {
@@ -222,12 +253,11 @@
                 if (box && pos.x >= box.x && pos.x <= box.x + box.width &&
                     pos.y >= box.y && pos.y <= box.y + box.height) {
                     window.open(box.url, '_blank');
-                    break; // Tıklanınca döngüyü kır
+                    break;
                 }
             }
         }
 
-        // Fare Hareketleri (Hover efektini tetikleme)
         function handleMouseMove(evt) {
             const pos = getMousePos(evt);
             let anyHovered = false;
@@ -246,7 +276,6 @@
             canvas.style.cursor = anyHovered ? 'pointer' : 'default';
         }
 
-        // Olay Dinleyicileri
         canvas.addEventListener('click', handleClick);
         canvas.addEventListener('mousemove', handleMouseMove);
         
