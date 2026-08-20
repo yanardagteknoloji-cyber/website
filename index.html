@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yanardağ</title>
+    <title>Yanardağ Bağlantıları</title>
     <style>
         body, html {
             margin: 0;
@@ -34,7 +34,6 @@
 
         let hitboxes = [];
 
-        // Menü Verileri
         const menuData = [
             { 
                 title: "WEB SİTESİ", 
@@ -52,23 +51,33 @@
             }
         ];
 
-        // Görseller
         const img1 = new Image();
         const img2 = new Image();
         let img1Loaded = false;
         let img2Loaded = false;
 
-        img1.src = 'bayrak.png';
-        img2.src = 'avatar.jpg';
+        const bayrakExtensions = ['bayrak.png', 'bayrak.PNG', 'bayrak.jpg', 'bayrak.jpeg', 'Bayrak1.png'];
+        let bayrakIndex = 0;
+
+        function loadBayrak() {
+            if (bayrakIndex < bayrakExtensions.length) {
+                img1.src = bayrakExtensions[bayrakIndex];
+            }
+        }
 
         img1.onload = () => { img1Loaded = true; };
+        img1.onerror = () => {
+            bayrakIndex++;
+            loadBayrak();
+        };
+
+        img2.src = 'avatar.jpeg';
         img2.onload = () => { img2Loaded = true; };
 
-        // Arka Plan Parçacıkları (Ateş Kıvılcımları)
+        loadBayrak();
+
         const particles = [];
         const particleCount = 80;
-
-        // Ateş tonları (Sarı, Turuncu, Kırmızı)
         const fireColors = ['255, 69, 0', '255, 140, 0', '255, 215, 0'];
 
         function initParticles() {
@@ -80,7 +89,7 @@
                     y: Math.random() * window.innerHeight,
                     radius: Math.random() * 2 + 0.5,
                     speedX: (Math.random() - 0.5) * 0.8,
-                    speedY: Math.random() * -1.5 - 0.5, // Ateşin savrulma hızı
+                    speedY: Math.random() * -1.5 - 0.5,
                     opacity: Math.random() * 0.8 + 0.2,
                     color: randomColor
                 });
@@ -95,13 +104,10 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        // Ana Çizim Döngüsü
         function draw() {
-            // Ekranı temizle
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Kıvılcım Animasyonu Çiz
             particles.forEach(p => {
                 p.x += p.speedX;
                 p.y += p.speedY;
@@ -120,50 +126,30 @@
             });
 
             const centerX = canvas.width / 2;
-            let currentY = canvas.height > 800 ? 80 : 40;
+            let currentY = canvas.height > 800 ? 50 : 25;
 
-            // Fotoğrafları Çiz
-            if (img1Loaded || img2Loaded) {
-                const gap = 20;
-                const maxWidth = Math.min(140, canvas.width * 0.35);
-                
-                let w1 = 0, h1 = 0, w2 = 0, h2 = 0;
-                let totalWidth = 0;
-                
-                if (img1Loaded) {
-                    const scale1 = maxWidth / img1.width;
-                    w1 = maxWidth;
-                    h1 = img1.height * scale1;
-                    totalWidth += w1;
-                }
-                
-                if (img2Loaded) {
-                    const scale2 = maxWidth / img2.width;
-                    w2 = maxWidth;
-                    h2 = img2.height * scale2;
-                    totalWidth += w2;
-                }
-                
-                if (img1Loaded && img2Loaded) totalWidth += gap;
-
-                let startX = centerX - (totalWidth / 2);
-                let maxImgHeight = Math.max(h1, h2);
-
-                if (img1Loaded) {
-                    ctx.drawImage(img1, startX, currentY + (maxImgHeight - h1) / 2, w1, h1);
-                    startX += w1 + gap;
-                }
-                
-                if (img2Loaded) {
-                    ctx.drawImage(img2, startX, currentY + (maxImgHeight - h2) / 2, w2, h2);
-                }
-                
-                currentY += maxImgHeight + 35;
-            } else {
-                currentY += 180;
+            if (img1Loaded) {
+                const maxWidth1 = Math.min(160, canvas.width * 0.4);
+                const scale1 = maxWidth1 / img1.width;
+                const w1 = maxWidth1;
+                const h1 = img1.height * scale1;
+                ctx.drawImage(img1, centerX - w1 / 2, currentY, w1, h1);
+                currentY += h1 + 15;
             }
 
-            // Başlıkları Çiz
+            if (img2Loaded) {
+                const maxWidth2 = Math.min(120, canvas.width * 0.3);
+                const scale2 = maxWidth2 / img2.width;
+                const w2 = maxWidth2;
+                const h2 = img2.height * scale2;
+                ctx.drawImage(img2, centerX - w2 / 2, currentY, w2, h2);
+                currentY += h2 + 25;
+            }
+
+            if (!img1Loaded && !img2Loaded) {
+                currentY += 150;
+            }
+
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -171,18 +157,17 @@
             if ('letterSpacing' in ctx) ctx.letterSpacing = "3px";
             ctx.font = 'bold 32px Arial, sans-serif';
             if(canvas.width < 500) ctx.font = 'bold 24px Arial, sans-serif';
-            ctx.fillText('YANARDAĞ', centerX, currentY);
+            ctx.fillText('YANARDAĞ BAĞLANTILARI', centerX, currentY);
             if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
             
-            currentY += 45;
+            currentY += 40;
 
             ctx.font = '28px Arial, sans-serif';
             if(canvas.width < 500) ctx.font = '20px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
-            currentY += 70;
+            currentY += 55;
 
-            // Animasyonlu Butonları Çiz
             menuData.forEach((item, index) => {
                 if (item.isHovered) {
                     item.scale = Math.min(item.scale + 0.02, 1.08); 
@@ -210,11 +195,9 @@
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
 
-                // Butonun hover rengini de temaya uygun ateşe yakın bir renk (koyu kırmızı) yapalım
                 ctx.fillStyle = `rgba(255, 69, 0, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
-                // Kenarlık turuncu/kırmızı tonda parlar
                 ctx.lineWidth = 2;
                 ctx.strokeStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 ctx.stroke();
@@ -234,13 +217,12 @@
                     url: item.url
                 };
 
-                currentY += btnHeight + 25;
+                currentY += btnHeight + 20;
             });
 
             requestAnimationFrame(draw);
         }
 
-        // Fare/Dokunmatik Etkileşimleri
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
             const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
