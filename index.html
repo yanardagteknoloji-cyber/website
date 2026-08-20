@@ -34,52 +34,53 @@
 
         let hitboxes = [];
 
+        // Menü verilerine animasyon değişkenlerini ekledik
         const menuData = [
             { 
                 title: "WEB SİTESİ", 
-                linkText: "Bağlantı", 
-                url: "https://sites.google.com/view/yanardag-/ana-sayfa" 
+                url: "https://sites.google.com/view/yanardag-/ana-sayfa",
+                isHovered: false,
+                scale: 1,
+                animProgress: 0
             },
             { 
                 title: "OYUNLAR", 
-                linkText: "Bağlantı", 
-                url: "https://sites.google.com/view/yanardag-games-com/ana-sayfa" 
+                url: "https://sites.google.com/view/yanardag-games-com/ana-sayfa",
+                isHovered: false,
+                scale: 1,
+                animProgress: 0
             }
         ];
 
-        // GitHub deposundaki dosya isimleri
+        // Görseller
         const img1 = new Image();
         const img2 = new Image();
         let img1Loaded = false;
         let img2Loaded = false;
 
         img1.src = 'bayrak.png';
-        img2.src = 'avatar.png';
+        img2.src = 'avatar.jpg';
 
-        function checkAndDraw() {
-            draw();
-        }
-
-        img1.onload = () => { img1Loaded = true; checkAndDraw(); };
-        img2.onload = () => { img2Loaded = true; checkAndDraw(); };
-        img1.onerror = checkAndDraw;
-        img2.onerror = checkAndDraw;
+        img1.onload = () => { img1Loaded = true; };
+        img2.onload = () => { img2Loaded = true; };
 
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            draw();
         }
-
         window.addEventListener('resize', resizeCanvas);
+        resizeCanvas(); // İlk boyutlandırma
 
+        // Animasyon Döngüsü (Her saniye 60 kere çalışır)
         function draw() {
+            // Ekranı temizle
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const centerX = canvas.width / 2;
             let currentY = canvas.height > 800 ? 80 : 40;
 
+            // Fotoğrafları Çizdirme (Eski mantıkla aynı)
             if (img1Loaded || img2Loaded) {
                 const gap = 20;
                 const maxWidth = Math.min(140, canvas.width * 0.35);
@@ -120,6 +121,7 @@
                 currentY += 180;
             }
 
+            // Başlık Çizimleri
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -136,40 +138,72 @@
             if(canvas.width < 500) ctx.font = '20px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
-            currentY += 60;
+            currentY += 70; // Butonlara yaklaşmadan önce boşluk
 
-            hitboxes = [];
+            // Animasyonlu Butonları Çizdirme
+            menuData.forEach((item, index) => {
+                // Animasyon hesaplamaları (Yumuşak geçiş)
+                if (item.isHovered) {
+                    item.scale = Math.min(item.scale + 0.02, 1.08); // %8 büyür
+                    item.animProgress = Math.min(item.animProgress + 0.1, 1);
+                } else {
+                    item.scale = Math.max(item.scale - 0.02, 1.0);
+                    item.animProgress = Math.max(item.animProgress - 0.1, 0);
+                }
 
-            menuData.forEach((item) => {
-                ctx.fillStyle = '#FFFFFF';
-                ctx.font = 'bold 22px Arial, sans-serif';
-                if(canvas.width < 500) ctx.font = 'bold 18px Arial, sans-serif';
+                ctx.font = 'bold 20px Arial, sans-serif';
+                if(canvas.width < 500) ctx.font = 'bold 16px Arial, sans-serif';
+                
+                const textWidth = ctx.measureText(item.title).width;
+                const btnWidth = textWidth + 80; // Kenarlardan boşluk (padding)
+                const btnHeight = canvas.width < 500 ? 45 : 55;
+
+                ctx.save();
+                ctx.translate(centerX, currentY);
+                ctx.scale(item.scale, item.scale); // Butonu merkezden büyüt
+
+                // Buton Arka Planı ve Çerçevesi
+                ctx.beginPath();
+                if (ctx.roundRect) { // Köşeleri ovalleştir
+                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 15);
+                } else {
+                    ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
+                }
+
+                // Hover olunca hafif mavi dolgu
+                ctx.fillStyle = `rgba(0, 115, 255, ${item.animProgress * 0.15})`;
+                ctx.fill();
+                
+                // Hover olunca beyazdan maviye dönen çerçeve
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
+                ctx.stroke();
+
+                // Buton İçi Metin
+                ctx.fillStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "2px";
-                ctx.fillText(item.title, centerX, currentY);
+                ctx.fillText(item.title, 0, 0);
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
                 
-                currentY += 30;
+                ctx.restore();
 
-                ctx.font = '18px Arial, sans-serif';
-                if(canvas.width < 500) ctx.font = '16px Arial, sans-serif';
-                ctx.fillStyle = '#0073ff';
-                ctx.fillText(item.linkText, centerX, currentY);
-                
-                const textMetrics = ctx.measureText(item.linkText);
-                const textWidth = textMetrics.width;
-                
-                hitboxes.push({
-                    x: centerX - textWidth / 2 - 20,
-                    y: currentY - 20,
-                    width: textWidth + 40,
-                    height: 40,
+                // Hitbox'ı butonun boyutlarına göre kaydet
+                hitboxes[index] = {
+                    x: centerX - btnWidth / 2,
+                    y: currentY - btnHeight / 2,
+                    width: btnWidth,
+                    height: btnHeight,
                     url: item.url
-                });
+                };
 
-                currentY += 50;
+                currentY += btnHeight + 25; // Diğer butona olan mesafe
             });
+
+            // Döngüyü sürekli tekrarla
+            requestAnimationFrame(draw);
         }
 
+        // Fare Koordinatlarını Alma
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
             const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
@@ -180,34 +214,39 @@
             };
         }
 
+        // Tıklama Olayı
         function handleClick(evt) {
             const pos = getMousePos(evt);
             for (let i = 0; i < hitboxes.length; i++) {
                 const box = hitboxes[i];
-                if (pos.x >= box.x && pos.x <= box.x + box.width &&
+                if (box && pos.x >= box.x && pos.x <= box.x + box.width &&
                     pos.y >= box.y && pos.y <= box.y + box.height) {
                     window.open(box.url, '_blank');
-                    break;
+                    break; // Tıklanınca döngüyü kır
                 }
             }
         }
 
+        // Fare Hareketleri (Hover efektini tetikleme)
         function handleMouseMove(evt) {
             const pos = getMousePos(evt);
-            let isHovering = false;
+            let anyHovered = false;
             
             for (let i = 0; i < hitboxes.length; i++) {
                 const box = hitboxes[i];
-                if (pos.x >= box.x && pos.x <= box.x + box.width &&
+                if (box && pos.x >= box.x && pos.x <= box.x + box.width &&
                     pos.y >= box.y && pos.y <= box.y + box.height) {
-                    isHovering = true;
-                    break;
+                    menuData[i].isHovered = true;
+                    anyHovered = true;
+                } else {
+                    menuData[i].isHovered = false;
                 }
             }
             
-            canvas.style.cursor = isHovering ? 'pointer' : 'default';
+            canvas.style.cursor = anyHovered ? 'pointer' : 'default';
         }
 
+        // Olay Dinleyicileri
         canvas.addEventListener('click', handleClick);
         canvas.addEventListener('mousemove', handleMouseMove);
         
@@ -219,7 +258,8 @@
             handleClick(e.changedTouches ? e.changedTouches[0] : e);
         });
 
-        resizeCanvas();
+        // Çizimi başlat
+        draw();
     </script>
 </body>
 </html>
