@@ -64,20 +64,25 @@
         img1.onload = () => { img1Loaded = true; };
         img2.onload = () => { img2Loaded = true; };
 
-        // Arka Plan Parçacıkları (Animasyon için)
+        // Arka Plan Parçacıkları (Ateş Kıvılcımları)
         const particles = [];
-        const particleCount = 75; // Ekrandaki kıvılcım sayısı
+        const particleCount = 80;
+
+        // Ateş tonları (Sarı, Turuncu, Kırmızı)
+        const fireColors = ['255, 69, 0', '255, 140, 0', '255, 215, 0'];
 
         function initParticles() {
             particles.length = 0;
             for (let i = 0; i < particleCount; i++) {
+                const randomColor = fireColors[Math.floor(Math.random() * fireColors.length)];
                 particles.push({
                     x: Math.random() * window.innerWidth,
                     y: Math.random() * window.innerHeight,
-                    radius: Math.random() * 1.5 + 0.5,
-                    speedX: (Math.random() - 0.5) * 0.5,
-                    speedY: Math.random() * -1 - 0.2, // Yukarı doğru süzülme hızı
-                    opacity: Math.random() * 0.6 + 0.1
+                    radius: Math.random() * 2 + 0.5,
+                    speedX: (Math.random() - 0.5) * 0.8,
+                    speedY: Math.random() * -1.5 - 0.5, // Ateşin savrulma hızı
+                    opacity: Math.random() * 0.8 + 0.2,
+                    color: randomColor
                 });
             }
         }
@@ -85,23 +90,22 @@
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            initParticles(); // Ekran boyutu değişince parçacıkları yeniden dağıt
+            initParticles();
         }
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
         // Ana Çizim Döngüsü
         function draw() {
-            // 1. Ekranı temizle (Siyah Arka Plan)
+            // Ekranı temizle
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. Arka Plan Parçacık Animasyonunu Çiz
+            // Kıvılcım Animasyonu Çiz
             particles.forEach(p => {
                 p.x += p.speedX;
                 p.y += p.speedY;
 
-                // Parçacık ekrandan çıkarsa aşağıdan farklı bir noktadan tekrar başlat
                 if (p.x < 0) p.x = canvas.width;
                 if (p.x > canvas.width) p.x = 0;
                 if (p.y < 0) {
@@ -111,15 +115,14 @@
 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                // Parçacıkların rengi: Temaya uygun hafif transparan mavi
-                ctx.fillStyle = `rgba(0, 115, 255, ${p.opacity})`; 
+                ctx.fillStyle = `rgba(${p.color}, ${p.opacity})`; 
                 ctx.fill();
             });
 
             const centerX = canvas.width / 2;
             let currentY = canvas.height > 800 ? 80 : 40;
 
-            // 3. Fotoğrafları Çiz
+            // Fotoğrafları Çiz
             if (img1Loaded || img2Loaded) {
                 const gap = 20;
                 const maxWidth = Math.min(140, canvas.width * 0.35);
@@ -160,7 +163,7 @@
                 currentY += 180;
             }
 
-            // 4. Başlıkları Çiz
+            // Başlıkları Çiz
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -179,7 +182,7 @@
 
             currentY += 70;
 
-            // 5. Animasyonlu Butonları Çiz
+            // Animasyonlu Butonları Çiz
             menuData.forEach((item, index) => {
                 if (item.isHovered) {
                     item.scale = Math.min(item.scale + 0.02, 1.08); 
@@ -207,14 +210,16 @@
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
 
-                ctx.fillStyle = `rgba(0, 115, 255, ${item.animProgress * 0.15})`;
+                // Butonun hover rengini de temaya uygun ateşe yakın bir renk (koyu kırmızı) yapalım
+                ctx.fillStyle = `rgba(255, 69, 0, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
+                // Kenarlık turuncu/kırmızı tonda parlar
                 ctx.lineWidth = 2;
-                ctx.strokeStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
+                ctx.strokeStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 ctx.stroke();
 
-                ctx.fillStyle = item.animProgress > 0.5 ? '#0073ff' : '#ffffff';
+                ctx.fillStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "2px";
                 ctx.fillText(item.title, 0, 0);
                 if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
@@ -287,7 +292,6 @@
             handleClick(e.changedTouches ? e.changedTouches[0] : e);
         });
 
-        // Çizimi başlat
         draw();
     </script>
 </body>
