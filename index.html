@@ -59,22 +59,35 @@
         const bayrakExtensions = ['bayrak.png', 'bayrak.PNG', 'bayrak.jpg', 'bayrak.jpeg', 'Bayrak1.png'];
         let bayrakIndex = 0;
 
-        function loadBayrak() {
-            if (bayrakIndex < bayrakExtensions.length) {
-                img1.src = bayrakExtensions[bayrakIndex];
-            }
-        }
-
         img1.onload = () => { img1Loaded = true; };
         img1.onerror = () => {
             bayrakIndex++;
             loadBayrak();
         };
 
-        img2.src = 'avatar.jpeg';
+        function loadBayrak() {
+            if (bayrakIndex < bayrakExtensions.length) {
+                img1.src = bayrakExtensions[bayrakIndex];
+            }
+        }
+
+        const avatarExtensions = ['avatar.jpeg', 'avatar.jpg', 'avatar.png', 'avatar.JPEG', 'avatar.JPG', 'avatar.PNG'];
+        let avatarIndex = 0;
+
         img2.onload = () => { img2Loaded = true; };
+        img2.onerror = () => {
+            avatarIndex++;
+            loadAvatar();
+        };
+
+        function loadAvatar() {
+            if (avatarIndex < avatarExtensions.length) {
+                img2.src = avatarExtensions[avatarIndex];
+            }
+        }
 
         loadBayrak();
+        loadAvatar();
 
         const particles = [];
         const particleCount = 80;
@@ -105,6 +118,9 @@
         resizeCanvas();
 
         function draw() {
+            if (img1.complete && img1.naturalWidth !== 0) img1Loaded = true;
+            if (img2.complete && img2.naturalWidth !== 0) img2Loaded = true;
+
             ctx.fillStyle = '#000000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
