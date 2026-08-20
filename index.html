@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yanardağ Bağlantıları</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+        canvas {
+            display: block;
+            background-color: #000000;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="mainCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let hitboxes = [];
+
+        const menuData = [
+            { 
+                title: "WEB SİTESİ", 
+                linkText: "Bağlantı", 
+                url: "https://sites.google.com/view/yanardag-/ana-sayfa" 
+            },
+            { 
+                title: "OYUNLAR", 
+                linkText: "Bağlantı", 
+                url: "https://sites.google.com/view/yanardag-games-com/ana-sayfa" 
+            }
+        ];
+
+        // GitHub deposundaki dosya isimleri
+        const img1 = new Image();
+        const img2 = new Image();
+        let img1Loaded = false;
+        let img2Loaded = false;
+
+        img1.src = 'bayrak.png';
+        img2.src = 'avatar.png';
+
+        function checkAndDraw() {
+            draw();
+        }
+
+        img1.onload = () => { img1Loaded = true; checkAndDraw(); };
+        img2.onload = () => { img2Loaded = true; checkAndDraw(); };
+        img1.onerror = checkAndDraw;
+        img2.onerror = checkAndDraw;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            draw();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        function draw() {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            let currentY = canvas.height > 800 ? 80 : 40;
+
+            if (img1Loaded || img2Loaded) {
+                const gap = 20;
+                const maxWidth = Math.min(140, canvas.width * 0.35);
+                
+                let w1 = 0, h1 = 0, w2 = 0, h2 = 0;
+                let totalWidth = 0;
+                
+                if (img1Loaded) {
+                    const scale1 = maxWidth / img1.width;
+                    w1 = maxWidth;
+                    h1 = img1.height * scale1;
+                    totalWidth += w1;
+                }
+                
+                if (img2Loaded) {
+                    const scale2 = maxWidth / img2.width;
+                    w2 = maxWidth;
+                    h2 = img2.height * scale2;
+                    totalWidth += w2;
+                }
+                
+                if (img1Loaded && img2Loaded) totalWidth += gap;
+
+                let startX = centerX - (totalWidth / 2);
+                let maxImgHeight = Math.max(h1, h2);
+
+                if (img1Loaded) {
+                    ctx.drawImage(img1, startX, currentY + (maxImgHeight - h1) / 2, w1, h1);
+                    startX += w1 + gap;
+                }
+                
+                if (img2Loaded) {
+                    ctx.drawImage(img2, startX, currentY + (maxImgHeight - h2) / 2, w2, h2);
+                }
+                
+                currentY += maxImgHeight + 35;
+            } else {
+                currentY += 180;
+            }
+
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            ctx.fillStyle = '#FFFFFF';
+            if ('letterSpacing' in ctx) ctx.letterSpacing = "3px";
+            ctx.font = 'bold 32px Arial, sans-serif';
+            if(canvas.width < 500) ctx.font = 'bold 24px Arial, sans-serif';
+            ctx.fillText('YANARDAĞ BAĞLANTILARI', centerX, currentY);
+            if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
+            
+            currentY += 45;
+
+            ctx.font = '28px Arial, sans-serif';
+            if(canvas.width < 500) ctx.font = '20px Arial, sans-serif';
+            ctx.fillText('Hoş geldiniz', centerX, currentY);
+
+            currentY += 60;
+
+            hitboxes = [];
+
+            menuData.forEach((item) => {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.font = 'bold 22px Arial, sans-serif';
+                if(canvas.width < 500) ctx.font = 'bold 18px Arial, sans-serif';
+                if ('letterSpacing' in ctx) ctx.letterSpacing = "2px";
+                ctx.fillText(item.title, centerX, currentY);
+                if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
+                
+                currentY += 30;
+
+                ctx.font = '18px Arial, sans-serif';
+                if(canvas.width < 500) ctx.font = '16px Arial, sans-serif';
+                ctx.fillStyle = '#0073ff';
+                ctx.fillText(item.linkText, centerX, currentY);
+                
+                const textMetrics = ctx.measureText(item.linkText);
+                const textWidth = textMetrics.width;
+                
+                hitboxes.push({
+                    x: centerX - textWidth / 2 - 20,
+                    y: currentY - 20,
+                    width: textWidth + 40,
+                    height: 40,
+                    url: item.url
+                });
+
+                currentY += 50;
+            });
+        }
+
+        function getMousePos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function handleClick(evt) {
+            const pos = getMousePos(evt);
+            for (let i = 0; i < hitboxes.length; i++) {
+                const box = hitboxes[i];
+                if (pos.x >= box.x && pos.x <= box.x + box.width &&
+                    pos.y >= box.y && pos.y <= box.y + box.height) {
+                    window.open(box.url, '_blank');
+                    break;
+                }
+            }
+        }
+
+        function handleMouseMove(evt) {
+            const pos = getMousePos(evt);
+            let isHovering = false;
+            
+            for (let i = 0; i < hitboxes.length; i++) {
+                const box = hitboxes[i];
+                if (pos.x >= box.x && pos.x <= box.x + box.width &&
+                    pos.y >= box.y && pos.y <= box.y + box.height) {
+                    isHovering = true;
+                    break;
+                }
+            }
+            
+            canvas.style.cursor = isHovering ? 'pointer' : 'default';
+        }
+
+        canvas.addEventListener('click', handleClick);
+        canvas.addEventListener('mousemove', handleMouseMove);
+        
+        canvas.addEventListener('touchstart', (e) => {
+            handleMouseMove(e);
+        }, {passive: true});
+        
+        canvas.addEventListener('touchend', (e) => {
+            handleClick(e.changedTouches ? e.changedTouches[0] : e);
+        });
+
+        resizeCanvas();
+    </script>
+</body>
+</html>
