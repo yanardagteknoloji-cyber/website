@@ -9,16 +9,14 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            /* Ekran yüksekliğini sabitleyen ayarlar kaldırıldı, kaydırma açıldı */
             background-color: #000000;
-            overflow-x: hidden; /* Sadece yatay kaydırmayı engelle */
+            overflow-x: hidden;
             font-family: Arial, sans-serif;
         }
         canvas {
             display: block;
             margin: 0 auto;
             background-color: #000000;
-            /* touch-action: none; kaldırıldı ki mobilde ekran kaydırılabilsin */
         }
     </style>
 </head>
@@ -111,35 +109,34 @@
 
         function calculateContentHeight() {
             const width = window.innerWidth;
-            let currentY = window.innerHeight > 800 ? 30 : 15;
+            let currentY = window.innerHeight > 800 ? 40 : 20;
 
             if (img1Loaded) {
-                const maxWidth1 = Math.min(320, width * 0.7);
-                const maxHeight1 = window.innerHeight * 0.25; 
+                const maxWidth1 = Math.min(400, width * 0.8); // Büyütüldü
+                const maxHeight1 = window.innerHeight * 0.30; 
                 const scale1 = Math.min(maxWidth1 / img1.width, maxHeight1 / img1.height);
-                currentY += (img1.height * scale1) + 15;
+                currentY += (img1.height * scale1) + 20;
             }
 
             if (img2Loaded) {
-                const maxWidth2 = Math.min(170, width * 0.4);
-                const maxHeight2 = window.innerHeight * 0.20; 
+                const maxWidth2 = Math.min(220, width * 0.5); // Büyütüldü
+                const maxHeight2 = window.innerHeight * 0.25; 
                 const scale2 = Math.min(maxWidth2 / img2.width, maxHeight2 / img2.height);
-                currentY += (img2.height * scale2) + 25;
+                currentY += (img2.height * scale2) + 35;
             }
 
             if (!img1Loaded && !img2Loaded) {
-                currentY += 150;
+                currentY += 180;
             }
 
-            currentY += 50; // Başlık
-            currentY += 65; // Hoş geldiniz
+            currentY += 60; // Başlık boşluğu artırıldı
+            currentY += 75; // Hoş geldiniz boşluğu artırıldı
 
-            const btnHeight = width < 500 ? 55 : 70;
-            currentY += menuData.length * (btnHeight + 25);
+            const btnHeight = width < 500 ? 70 : 90; // Buton yükseklikleri artırıldı
+            currentY += menuData.length * (btnHeight + 35);
             
-            currentY += 50; // Alt boşluk
+            currentY += 60; // Alt boşluk artırıldı
 
-            // Ekran yüksekliğinden küçükse ekranı kapla, büyükse içeriğe göre uza
             return Math.max(window.innerHeight, currentY);
         }
 
@@ -147,7 +144,6 @@
             dpr = window.devicePixelRatio || 1;
             const width = window.innerWidth;
             
-            // İçerik uzunluğunu hesapla ve Canvas yüksekliğini ona göre ayarla
             logicalHeight = calculateContentHeight();
 
             canvas.width = width * dpr;
@@ -187,47 +183,48 @@
             });
 
             const centerX = width / 2;
-            let currentY = window.innerHeight > 800 ? 30 : 15;
+            let currentY = window.innerHeight > 800 ? 40 : 20;
 
             if (img1Loaded) {
-                const maxWidth1 = Math.min(320, width * 0.7);
-                const maxHeight1 = window.innerHeight * 0.25; 
+                const maxWidth1 = Math.min(400, width * 0.8);
+                const maxHeight1 = window.innerHeight * 0.30; 
                 const scale1 = Math.min(maxWidth1 / img1.width, maxHeight1 / img1.height);
                 const w1 = img1.width * scale1;
                 const h1 = img1.height * scale1;
                 ctx.drawImage(img1, centerX - w1 / 2, currentY, w1, h1);
-                currentY += h1 + 15;
+                currentY += h1 + 20;
             }
 
             if (img2Loaded) {
-                const maxWidth2 = Math.min(170, width * 0.4);
-                const maxHeight2 = window.innerHeight * 0.20; 
+                const maxWidth2 = Math.min(220, width * 0.5);
+                const maxHeight2 = window.innerHeight * 0.25; 
                 const scale2 = Math.min(maxWidth2 / img2.width, maxHeight2 / img2.height);
                 const w2 = img2.width * scale2;
                 const h2 = img2.height * scale2;
                 ctx.drawImage(img2, centerX - w2 / 2, currentY, w2, h2);
-                currentY += h2 + 25;
+                currentY += h2 + 35;
             }
 
             if (!img1Loaded && !img2Loaded) {
-                currentY += 150;
+                currentY += 180;
             }
 
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
+            // Yazılar Büyütüldü
             ctx.fillStyle = '#FFFFFF';
             if ('letterSpacing' in ctx) ctx.letterSpacing = "4px";
-            ctx.font = width < 500 ? 'bold 28px Arial, sans-serif' : 'bold 44px Arial, sans-serif';
+            ctx.font = width < 500 ? 'bold 34px Arial, sans-serif' : 'bold 54px Arial, sans-serif';
             ctx.fillText('YANARDAĞ BAĞLANTILARI', centerX, currentY);
             if ('letterSpacing' in ctx) ctx.letterSpacing = "0px";
             
-            currentY += 50;
+            currentY += 60;
 
-            ctx.font = width < 500 ? '24px Arial, sans-serif' : '34px Arial, sans-serif';
+            ctx.font = width < 500 ? '28px Arial, sans-serif' : '42px Arial, sans-serif';
             ctx.fillText('Hoş geldiniz', centerX, currentY);
 
-            currentY += 65;
+            currentY += 75;
 
             menuData.forEach((item, index) => {
                 if (item.isHovered) {
@@ -238,11 +235,12 @@
                     item.animProgress = Math.max(item.animProgress - 0.1, 0);
                 }
 
-                ctx.font = width < 500 ? 'bold 20px Arial, sans-serif' : 'bold 26px Arial, sans-serif';
+                // Buton Yazıları Büyütüldü
+                ctx.font = width < 500 ? 'bold 24px Arial, sans-serif' : 'bold 32px Arial, sans-serif';
                 
                 const textWidth = ctx.measureText(item.title).width;
-                const btnWidth = textWidth + 100;
-                const btnHeight = width < 500 ? 55 : 70;
+                const btnWidth = textWidth + 120; // Genişlik artırıldı
+                const btnHeight = width < 500 ? 70 : 90; // Yükseklik artırıldı
 
                 ctx.save();
                 ctx.translate(centerX, currentY);
@@ -250,7 +248,7 @@
 
                 ctx.beginPath();
                 if (ctx.roundRect) {
-                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 18);
+                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 22); // Köşe yumuşatması artırıldı
                 } else {
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
@@ -258,7 +256,7 @@
                 ctx.fillStyle = `rgba(255, 69, 0, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4; // Çizgi kalınlığı artırıldı
                 ctx.strokeStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 ctx.stroke();
 
@@ -277,7 +275,7 @@
                     url: item.url
                 };
 
-                currentY += btnHeight + 25;
+                currentY += btnHeight + 35; // Butonlar arası boşluk artırıldı
             });
 
             requestAnimationFrame(draw);
@@ -285,7 +283,6 @@
 
         function getMousePos(evt) {
             const rect = canvas.getBoundingClientRect();
-            // Kaydırma miktarını (scroll) otomatik hesaplamak için clientY - rect.top kullanılır
             const touch = evt.touches && evt.touches[0] ? evt.touches[0] : (evt.changedTouches ? evt.changedTouches[0] : null);
             const clientX = touch ? touch.clientX : evt.clientX;
             const clientY = touch ? touch.clientY : evt.clientY;
