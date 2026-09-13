@@ -17,6 +17,9 @@
             display: block;
             margin: 0 auto;
             background-color: #000000;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
     </style>
 </head>
@@ -112,14 +115,14 @@
             let currentY = window.innerHeight > 800 ? 40 : 20;
 
             if (img1Loaded) {
-                const maxWidth1 = Math.min(400, width * 0.8); // Büyütüldü
+                const maxWidth1 = Math.min(400, width * 0.8);
                 const maxHeight1 = window.innerHeight * 0.30; 
                 const scale1 = Math.min(maxWidth1 / img1.width, maxHeight1 / img1.height);
                 currentY += (img1.height * scale1) + 20;
             }
 
             if (img2Loaded) {
-                const maxWidth2 = Math.min(220, width * 0.5); // Büyütüldü
+                const maxWidth2 = Math.min(220, width * 0.5);
                 const maxHeight2 = window.innerHeight * 0.25; 
                 const scale2 = Math.min(maxWidth2 / img2.width, maxHeight2 / img2.height);
                 currentY += (img2.height * scale2) + 35;
@@ -129,13 +132,13 @@
                 currentY += 180;
             }
 
-            currentY += 60; // Başlık boşluğu artırıldı
-            currentY += 75; // Hoş geldiniz boşluğu artırıldı
+            currentY += 60;
+            currentY += 75;
 
-            const btnHeight = width < 500 ? 70 : 90; // Buton yükseklikleri artırıldı
+            const btnHeight = width < 500 ? 70 : 90;
             currentY += menuData.length * (btnHeight + 35);
             
-            currentY += 60; // Alt boşluk artırıldı
+            currentY += 60;
 
             return Math.max(window.innerHeight, currentY);
         }
@@ -212,7 +215,6 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            // Yazılar Büyütüldü
             ctx.fillStyle = '#FFFFFF';
             if ('letterSpacing' in ctx) ctx.letterSpacing = "4px";
             ctx.font = width < 500 ? 'bold 34px Arial, sans-serif' : 'bold 54px Arial, sans-serif';
@@ -235,12 +237,11 @@
                     item.animProgress = Math.max(item.animProgress - 0.1, 0);
                 }
 
-                // Buton Yazıları Büyütüldü
                 ctx.font = width < 500 ? 'bold 24px Arial, sans-serif' : 'bold 32px Arial, sans-serif';
                 
                 const textWidth = ctx.measureText(item.title).width;
-                const btnWidth = textWidth + 120; // Genişlik artırıldı
-                const btnHeight = width < 500 ? 70 : 90; // Yükseklik artırıldı
+                const btnWidth = textWidth + 120;
+                const btnHeight = width < 500 ? 70 : 90;
 
                 ctx.save();
                 ctx.translate(centerX, currentY);
@@ -248,7 +249,7 @@
 
                 ctx.beginPath();
                 if (ctx.roundRect) {
-                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 22); // Köşe yumuşatması artırıldı
+                    ctx.roundRect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight, 22);
                 } else {
                     ctx.rect(-btnWidth / 2, -btnHeight / 2, btnWidth, btnHeight);
                 }
@@ -256,7 +257,7 @@
                 ctx.fillStyle = `rgba(255, 69, 0, ${item.animProgress * 0.15})`;
                 ctx.fill();
                 
-                ctx.lineWidth = 4; // Çizgi kalınlığı artırıldı
+                ctx.lineWidth = 4;
                 ctx.strokeStyle = item.animProgress > 0.5 ? '#ff4500' : '#ffffff';
                 ctx.stroke();
 
@@ -275,7 +276,7 @@
                     url: item.url
                 };
 
-                currentY += btnHeight + 35; // Butonlar arası boşluk artırıldı
+                currentY += btnHeight + 35;
             });
 
             requestAnimationFrame(draw);
@@ -298,7 +299,7 @@
                 const box = hitboxes[i];
                 if (box && pos.x >= box.x && pos.x <= box.x + box.width &&
                     pos.y >= box.y && pos.y <= box.y + box.height) {
-                    window.open(box.url, '_blank');
+                    window.location.href = box.url;
                     break;
                 }
             }
@@ -324,9 +325,12 @@
 
         canvas.addEventListener('click', handleClick);
         canvas.addEventListener('mousemove', handleMouseMove);
+        canvas.addEventListener('touchstart', function(evt) {
+            evt.preventDefault();
+            handleClick(evt);
+        }, { passive: false });
 
         draw();
     </script>
 </body>
 </html>
-
