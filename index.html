@@ -325,10 +325,23 @@
 
         canvas.addEventListener('click', handleClick);
         canvas.addEventListener('mousemove', handleMouseMove);
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+
         canvas.addEventListener('touchstart', function(evt) {
-            evt.preventDefault();
-            handleClick(evt);
-        }, { passive: false });
+            touchStartX = evt.touches[0].clientX;
+            touchStartY = evt.touches[0].clientY;
+        }, { passive: true });
+
+        canvas.addEventListener('touchend', function(evt) {
+            const touchEndX = evt.changedTouches[0].clientX;
+            const touchEndY = evt.changedTouches[0].clientY;
+            
+            if (Math.abs(touchEndX - touchStartX) < 15 && Math.abs(touchEndY - touchStartY) < 15) {
+                handleClick(evt);
+            }
+        });
 
         draw();
     </script>
